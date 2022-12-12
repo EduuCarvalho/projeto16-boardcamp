@@ -42,7 +42,25 @@ app.get ('/games', async (req,res)=>{
     res.send(games.rows);
 })
 
-
+app.post ('/games', async (req,res)=>{
+    const {name , image, stockTotal ,categoryId, pricePerDay} = req.body;
+    if (name == null || name == 'undefined'){
+        return res.sendStatus(400)
+    }
+    if (stockTotal<= 0 || pricePerDay <= 0 ){
+        return res.sendStatus(400);
+    }
+    const checkCategoryId = await connection.query(`SELECT * FROM categories WHERE id='${categoryId}';`)
+    if(checkCategoryId.rows.length==0){
+        return res.sendStatus(400);
+    }
+    const checkName = await connection.query(`SELECT * FROM games WHERE name='${name}';`)
+    if (checkName.rows.length>0){
+        return res.sendStatus(409);
+    }
+    const game = await connection.query(`INSERT INTO games ("name" , "image", "stockTotal" ,"categoryId", "pricePerDay") VALUES ($1,$2,$3,$4,$5)`,[name , image, stockTotal ,categoryId, pricePerDay])
+    res.send(game);
+})
 
 
 const port = process.env.PORT || 4000;
