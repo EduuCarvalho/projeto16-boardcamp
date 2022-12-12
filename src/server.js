@@ -62,6 +62,27 @@ app.post ('/games', async (req,res)=>{
     res.send(game);
 })
 
+app.get('/customers', async(req,res)=>{
+    const customers = await connection.query("SELECT * FROM customers;")
+    res.send(customers.rows);
+})
+
+app.get('/customers/:id', async (req,res)=>{
+    const {id} = req.params;
+
+    const checkID = await connection.query(`SELECT * FROM customers WHERE id='${id}';`)
+    if (checkID.rows.length <= 0){
+        return res.sendStatus(404);
+    }
+
+
+    try {const customer = await connection.query("SELECT * FROM customers WHERE id=$1",[id]);
+    res.send(customer.rows[0]);
+} catch (err) {
+    res.sendStatus(500);
+}
+
+})
 
 const port = process.env.PORT || 4000;
 app.listen(port,()=> console.log(`Server running in port ${port}`));
